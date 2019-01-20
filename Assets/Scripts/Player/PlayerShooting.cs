@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.XR; //needs to be UnityEngine.VR in version before 2017.2
 
 public class PlayerShooting : MonoBehaviour
 {
@@ -17,8 +18,17 @@ public class PlayerShooting : MonoBehaviour
     Light gunLight;
     float effectsDisplayTime = 0.2f;
 
+    public string InputName;
+    public XRNode NodeType;
+    private Vector3 _lastFramePosition;
 
-    void Awake ()
+    // Use this for initialization
+    void Start()
+    {
+        _lastFramePosition = transform.position;
+    }
+
+        void Awake ()
     {
         shootableMask = LayerMask.GetMask ("Shootable");
         gunParticles = GetComponent<ParticleSystem> ();
@@ -30,10 +40,17 @@ public class PlayerShooting : MonoBehaviour
 
     void Update ()
     {
+        //update hand position and rotation
+        transform.localPosition = InputTracking.GetLocalPosition(NodeType);
+        transform.localRotation = InputTracking.GetLocalRotation(NodeType);
+
         timer += Time.deltaTime;
 
-		if(Input.GetButton ("Fire1") && timer >= timeBetweenBullets && Time.timeScale != 0)
+        //InputName needs to be set to RightTrigger and configured for the Trigger Squeeze (10) in Inputs of Project Settings
+        //See Unity/Steam HTC Vive controller mappings for more details. https://docs.unity3d.com/Manual/OpenVRControllers.html
+        if (Input.GetAxis(InputName) >= 0.01f && timer >= timeBetweenBullets && Time.timeScale != 0)
         {
+            Debug.Log("===================  Shot Fired!!! ====================");
             Shoot ();
         }
 
